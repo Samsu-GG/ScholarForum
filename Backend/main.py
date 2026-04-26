@@ -14,7 +14,7 @@ def get_db():
 
 @app.get("/")
 def home():
-    return {"message": "ScholarForum Backend is running with PostgreSQL ✅"}
+    return {"message": "ScholarForum Backend is running with PostgreSQL "}
 
 @app.get("/tables")
 def list_tables(db: Session = Depends(get_db)):
