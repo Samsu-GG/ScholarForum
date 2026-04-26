@@ -1,3 +1,4 @@
+import { toast } from "react-toastify"
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthForm from "../components/AuthForm";
@@ -33,7 +34,7 @@ export default function RegisterPage() {
 //   };
 const handleSubmit = async (values) => {
   try {
-    const response = await fetch(` http://localhost:5174//register`, {
+    const response = await fetch(` http://localhost:8000/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

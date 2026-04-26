@@ -2,8 +2,10 @@ import os
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
+from models import Base
 
 load_dotenv()
+
 
 # Define the connection string
 DB_URL = os.environ.get("DATABASE_URL")
@@ -12,7 +14,6 @@ if DB_URL.startswith("postgres://"):
 
 # Create the engine
 engine = create_engine(DB_URL)
-
 SessionLocal = sessionmaker(
     autocommit=False, 
     autoflush=False, 
