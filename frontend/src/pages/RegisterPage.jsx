@@ -10,24 +10,55 @@ export default function RegisterPage() {
     { id: "name",     label: "Full name",       type: "text",     placeholder: "Jane Doe",              half: true },
     { id: "username", label: "Username",         type: "text",     placeholder: "janedoe",               half: true },
     { id: "email",    label: "Email address",    type: "email",    placeholder: "you@example.com" },
-    { id: "password", label: "Password",         type: "password", placeholder: "At least 6 characters" },
+    { id: "password", label: "Password",         type: "password", placeholder: "At least 8 characters" },
     { id: "confirm",  label: "Confirm password", type: "password", placeholder: "Repeat your password" },
+    {id: "role", label: "role", type: "radio",      options: ["Author", "User", "Admin"]},
   ];
 
-  const validate = ({ name, username, email, password, confirm }) => {
+  const validate = ({ name, username, email, password, confirm,role}) => {
     const errors = {};
     if (!name)                                          errors.name     = "Name is required.";
     if (!username)                                      errors.username = "Username is required.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))     errors.email    = "Enter a valid email address.";
-    if (!password || password.length < 6)               errors.password = "Password must be at least 6 characters.";
+    if (!password || password.length < 8)               errors.password = "Password must be at least 8 characters.";
+    else if(!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[@,_]/.test(password) || !/[1-9]/.test(password))  errors.password ="Password must have mix of capital letter and small letter"
     if (!confirm || confirm !== password)               errors.confirm  = "Passwords do not match.";
+    if(!role)                                           errors.role  = "Must select a Role";
     return errors;
   };
 
   // No API call — just show success
-  const handleSubmit = (values) => {
-    setSuccess(true);
-  };
+//   const handleSubmit = (values) => {
+//     setSuccess(true);
+//   };
+const handleSubmit = async (values) => {
+  try {
+    const response = await fetch(` http://localhost:5174//register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        full_name: values.name,
+        user_name: values.username,
+        email: values.email,
+        password: values.password,
+        role: values.role,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      setSuccess(true);
+      toast.success("Account Created Successfully!");
+      setTimeout(() => navigate("/login"), 1200);
+    } else {
+      toast.error(data.detail || "Registration failed");
+    }
+  } catch (error) {
+    toast.error("Something went wrong");
+    console.error(error);
+  }
+};
 
   return (
     <div style={pageWrap}>
