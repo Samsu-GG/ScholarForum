@@ -1,13 +1,5 @@
 import { useState } from "react";
 
-/**
- * Props:
- *   fields      – [{ id, label, type, placeholder, half? }]
- *   validate    – fn(values) → { fieldId: errorMsg }
- *   onSubmit    – fn(values) — called only when validation passes
- *   submitLabel – button text
- *   disabled    – grays out button
- */
 export default function AuthForm({ fields, validate, onSubmit, submitLabel = "Submit", disabled = false }) {
   const [values, setValues]   = useState(Object.fromEntries(fields.map(f => [f.id, ""])));
   const [errors, setErrors]   = useState({});
@@ -23,7 +15,6 @@ export default function AuthForm({ fields, validate, onSubmit, submitLabel = "Su
     onSubmit(values);
   };
 
-  // Pair consecutive half-width fields
   const rows = [];
   let i = 0;
   while (i < fields.length) {
@@ -41,40 +32,33 @@ export default function AuthForm({ fields, validate, onSubmit, submitLabel = "Su
           {row.map(f => (
             <div key={f.id} style={{ marginBottom: "14px" }}>
               <label style={{ display: "block", fontSize: "13px", color: "#5f6368", marginBottom: "5px" }}>{f.label}</label>
-   {f.type === "radio" ? (
-  <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-    {f.options.map(opt => (
-      <label key={opt} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-        <input
-          type="radio"
-          name={f.id}
-          value={opt}
-          checked={values[f.id] === opt}
-          onChange={() => change(f.id, opt)}
-        />
-        {opt}
-      </label>
-    ))}
-  </div>
-) : (
-  <input
-    type={f.type}
-    value={values[f.id]}
-    placeholder={f.placeholder}
-    onChange={e => change(f.id, e.target.value)}
-    style={{
-      width: "100%",
-      padding: "9px 12px",
-      fontSize: "14px",
-      color: "#202124",
-      background: "#fff",
-      outline: "none",
-      borderRadius: "4px",
-      border: `1px solid ${errors[f.id] ? "#d93025" : "#dadce0"}`,
-      boxSizing: "border-box",
-    }}
-  />
-)}
+              {f.type === "radio" ? (
+                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                  {f.options.map(opt => (
+                    <label key={opt} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <input
+                        type="radio"
+                        name={f.id}
+                        value={opt}
+                        checked={values[f.id] === opt}
+                        onChange={() => change(f.id, opt)}
+                      />
+                      {opt}
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <input
+                  type={f.type}
+                  value={values[f.id]}
+                  placeholder={f.placeholder}
+                  onChange={e => change(f.id, e.target.value)}
+                  className="auth-input"
+                  style={{
+                    border: `1px solid ${errors[f.id] ? "#d93025" : "#dadce0"}`,
+                  }}
+                />
+              )}
               {errors[f.id] && <p style={{ fontSize: "12px", color: "#d93025", marginTop: "4px" }}>{errors[f.id]}</p>}
             </div>
           ))}
@@ -84,10 +68,10 @@ export default function AuthForm({ fields, validate, onSubmit, submitLabel = "Su
       <button
         onClick={submit}
         disabled={disabled}
+        className="primary-btn"
         style={{
-          width: "100%", padding: "10px", background: "#4285F4", color: "#fff",
-          border: "none", borderRadius: "4px", fontSize: "15px", cursor: disabled ? "not-allowed" : "pointer",
-          opacity: disabled ? 0.7 : 1, marginTop: "6px",
+          cursor: disabled ? "not-allowed" : "pointer",
+          opacity: disabled ? 0.7 : 1,
         }}
       >
         {submitLabel}
