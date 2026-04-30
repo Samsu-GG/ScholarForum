@@ -22,7 +22,7 @@ export default function RegisterPage() {
     if (!username)                                      errors.username = "Username is required.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))      errors.email    = "Enter a valid email address.";
     if (!password || password.length < 8)               errors.password = "Password must be at least 8 characters.";
-    else if(!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[@,_]/.test(password) || !/[1-9]/.test(password))
+    else if(!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[@,_,.,$,!,%,&,*]/.test(password) || !/[1-9]/.test(password))
                                                         errors.password = "Password must have mix of capital and small letters, a number, and @ or _";
     if (!confirm || confirm !== password)               errors.confirm  = "Passwords do not match.";
     if(!role)                                           errors.role     = "Must select a Role";
@@ -31,7 +31,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (values) => {
     try {
-      const response = await fetch(`http://localhost:5174/register`, {
+      const response = await fetch(`http://127.0.0.1:8000/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

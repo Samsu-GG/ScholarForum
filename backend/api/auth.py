@@ -34,7 +34,7 @@ def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
     existing = db.query(Users).filter(Users.email == data.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
-    print(data.password)
+    # print(data.password)
     hashed_pw = hash_password(data.password)
 
     new_user = Users(

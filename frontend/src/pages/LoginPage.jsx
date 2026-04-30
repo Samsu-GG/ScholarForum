@@ -19,8 +19,30 @@ export default function LoginPage() {
   };
 
   // No API call — just show success
-  const handleSubmit = (values) => {
-    setSuccess(true);
+  const handleSubmit = async (values) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess(true);
+        toast.success("Account Created Successfully!");
+        setTimeout(() => navigate("/"), 1200);
+      } else {
+        toast.error(data.detail || "Login failed");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+      console.error(error);
+    }
   };
 
   return (
