@@ -1,0 +1,217 @@
+/* ====================
+   Global Styles
+   ==================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #fff;
+  color: #202124;
+}
+
+button, input {
+  font-family: inherit;
+  padding: 10px 20px;   /* same padding */
+  font-size: 14px;      /* same font */
+  border-radius: 4px;
+
+}
+
+/* ====================
+   Layout & Wrappers
+   ==================== */
+.page-wrap {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.center-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: #f8f9fa;
+}
+
+.back-bar {
+  padding: 14px 20px;
+  font-size: 13px;
+  color: #5f6368;
+  cursor: pointer;
+  border-bottom: 1px solid #e8eaed;
+  background: #fff;
+}
+
+/* ====================
+   Cards & Auth Components
+   ==================== */
+.auth-card {
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  padding: 2rem 2.2rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.auth-subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: #5f6368;
+  margin-bottom: 1.6rem;
+}
+
+.success-banner {
+  background: #e6f4ea;
+  border: 1px solid #a8d5b5;
+  border-radius: 6px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.success-icon {
+  width: 22px;
+  height: 22px;
+  background: #34A853;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.success-text {
+  font-size: 14px;
+  color: #137333;
+  font-weight: 500;
+}
+
+.divider {
+  height: 1px;
+  background: #e8eaed;
+  margin: 1.2rem 0;
+}
+
+/* ====================
+   Typography & Colors
+   ==================== */
+.logo-text { font-size: 22px; font-weight: 400; text-align: center; margin-bottom: 4px; }
+.text-blue { color: #4285F4; }
+.text-red { color: #EA4335; }
+.text-yellow { color: #FBBC05; }
+.text-green { color: #34A853; }
+
+.footer-text { text-align: center; font-size: 13px; color: #5f6368; }
+.link { color: #4285F4; cursor: pointer; }
+
+/* ====================
+   Buttons & Inputs
+   ==================== */
+
+
+.ghost-btn {
+  width: 100%;
+  padding: 10px;
+  background: #f8f9fa;
+  color: #3c4043;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.primary-btn {
+  background: #4285F4;
+  color: #fff;
+  border: none;
+}
+
+.outline-btn {
+  background: #f8f9fa;
+  color: #3c4043;
+  border: 1px solid #dadce0;
+}
+
+/* ====================
+   Home Page Specific
+   ==================== */
+.home-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  gap: 2rem;
+  background: #fff;
+}
+
+.home-title { font-size: 52px; font-weight: 400; letter-spacing: -1px; line-height: 1; }
+.home-subtitle { font-size: 16px; color: #5f6368; margin-top: 6px; letter-spacing: 0.5px; }
+
+.search-bar-container {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #dfe1e5;
+  border-radius: 24px;
+  padding: 10px 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 15px;
+  color: #202124;
+}
+
+.footer-nav {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 14px;
+  border-top: 1px solid #e8eaed;
+  background: #f2f2f2;
+  flex-wrap: wrap;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 14px;
+  color: #202124;
+  background: #fff;
+  outline: none;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.navbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 24px;
+  border-bottom: 1px solid #e8eaed;
+  background: #fff;
+}
+
+.btn-inline {
+  width: auto !important;
+}
