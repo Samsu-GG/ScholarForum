@@ -4,24 +4,9 @@ from database import SessionLocal, get_db
 from models import Users, UserRole
 from core.authenticate import create_access_token
 from schemas import RegisterRequest, LoginRequest, RegisterResponse, LoginResponse
-import bcrypt
+from core.password_helper import hash_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
-
-
-# Helper to hash
-def hash_password(password: str) -> str:
-    pwd_bytes = password.encode('utf-8')
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(pwd_bytes, salt)
-    return hashed.decode('utf-8')
-
-# Helper to verify
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    pwd_bytes = plain_password.encode('utf-8')
-    hashed_bytes = hashed_password.encode('utf-8')
-    return bcrypt.checkpw(pwd_bytes, hashed_bytes)
-
 
 
 # -------------------------
