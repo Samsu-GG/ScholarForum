@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import engine, get_db
 from models import Base, Papers, Author, Users, Comment, Writes, Reads, Cites
-from api import auth
+from api import auth, search
 from dotenv import load_dotenv
 import os
 
@@ -26,6 +26,8 @@ app.add_middleware(
 )
 
 # create tables ONCE at startup time
-Base.metadata.create_all(bind=engine)
+# Handled by Alembic now
+# Base.metadata.create_all(bind=engine)
 
 app.include_router(auth.router)
+app.include_router(search.router)
