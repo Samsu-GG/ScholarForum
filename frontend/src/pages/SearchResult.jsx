@@ -7,7 +7,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
  */
 async function fetchSearchResult(query, filters) {
   // Update this URL to your actual FastAPI server address
-  const BASE_URL = "http://127.0.0.1:8000/search";
+  const BASE_URL = "http://127.0.0.1:8000/search/";
 
   const params = new URLSearchParams({
     q: query,
@@ -16,12 +16,22 @@ async function fetchSearchResult(query, filters) {
     author: filters.author,
     recent_only: filters.recentOnly,
     sort_by: filters.sortBy || "",
+    limit: 10,
+    offset: 0
   });
 
-  const response = await fetch(`${BASE_URL}?${params.toString()}`);
-
+  const response = await fetch(`${BASE_URL}?${params.toString()}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                }
+            })
   if (!response.ok) {
-    throw new Error("Backend failed to respond");
+    console.error(`Error ${response.status}: ${response.statusText}`);
+    const errorData = await response.json().catch(() => ({}));
+    console.error("Error details:", errorData);
+    throw new Error(`Backend error: ${response.status}`);
   }
 
   return await response.json();
@@ -68,7 +78,7 @@ export default function SearchResultsPage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await fetchFromBackend(query, applied);
+        const data = await fetchSearchResult(query, applied);
         setResults(data);
       } catch (err) {
         console.error("Search Error:", err);
