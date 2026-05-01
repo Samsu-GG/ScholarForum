@@ -34,6 +34,7 @@ export default function LoginPage() {
 
       if (response.ok) {
         setSuccess(true);
+        localStorage.setItem("token", data.access_token)
         toast.success("Account Created Successfully!");
         setTimeout(() => navigate("/"), 1200);
       } else {
