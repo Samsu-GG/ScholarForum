@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import TSVECTOR
 from database import SessionLocal, get_db
 from models import Papers
 from schemas import SearchResponse
-from datetime import datetime
+from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 
 router = APIRouter(prefix="/search", tags=["search"])

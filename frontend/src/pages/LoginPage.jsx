@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useAuth } from "../components/AuthContext"; 
 import AuthForm from "../components/AuthForm";
 
 export default function LoginPage() {
   const navigate  = useNavigate();
   const [success, setSuccess] = useState(false);
+  const { checkAuth } = useAuth();
 
   const fields = [
     { id: "email",    label: "Email address", type: "email",    placeholder: "you@example.com" },
@@ -33,8 +36,9 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess(true);
         localStorage.setItem("token", data.access_token)
+        await checkAuth();
+        setSuccess(true);
         toast.success("Account Created Successfully!");
         setTimeout(() => navigate("/"), 1200);
       } else {
