@@ -17,6 +17,7 @@ class LoginRequest(BaseModel):
 
 class RegisterResponse(BaseModel):
     user_id: int
+    full_name: str
     user_name: str
     email: EmailStr
     role: str

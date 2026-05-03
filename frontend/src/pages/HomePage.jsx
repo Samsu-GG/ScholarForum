@@ -1,10 +1,15 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../components/AuthContext";
 import Navbar from "../components/Navbar";
 
 export default function HomePage() {
+  const { isLoggedIn, loading, user, checkAuth } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+
+  if (loading) return null;
 
   const goToSearch = () => {
     if (query.trim()) navigate(`/search?q=${encodeURIComponent(query.trim())}`);
@@ -60,9 +65,11 @@ export default function HomePage() {
           <button className="outline-btn btn-inline" onClick={goToSearch}>
             Forum Search
           </button>
-          <button className="primary-btn btn-inline" onClick={() => navigate("/login")}>
-            Sign In to Forum
-          </button>
+          {!isLoggedIn &&
+            <button className="primary-btn btn-inline" onClick={() => navigate("/login")}>
+              Sign In to Forum
+            </button>
+          }
         </div>
       </main>
 
@@ -71,8 +78,13 @@ export default function HomePage() {
         {["About", "Help", "Privacy", "Terms"].map((l) => (
           <span key={l} className="link">{l}</span>
         ))}
-        <span className="link" onClick={() => navigate("/login")}>Sign in</span>
-        <span className="link" onClick={() => navigate("/register")}>Register</span>
+
+        {!isLoggedIn && (
+          <>
+            <span className="link" onClick={() => navigate("/login")}>Sign in</span>
+            <span className="link" onClick={() => navigate("/register")}>Register</span>
+          </>
+        )}
       </footer>
     </div>
   );
