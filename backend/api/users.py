@@ -6,6 +6,8 @@ from models import Users
 from schemas import RegisterResponse
 from pydantic import BaseModel, Field, field_validator
 from core.authenticate import verify_token
+from core.password_helper import verify_password, hash_password
+
 import re
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -25,7 +27,7 @@ class UpdateProfileRequest(BaseModel):
 
 @router.get("/me", response_model=RegisterResponse)
 def get_me(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    valid_user=verify_token(token)
+    valid_user = verify_token(token)
     if not valid_user:
         raise HTTPException(status_code=401, detail="Invalid token")
 
@@ -36,7 +38,7 @@ def get_me(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
 
 @router.put("/me", response_model=RegisterResponse)
 def update_me(payload: UpdateProfileRequest, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    valid_user=verify_token(token)
+    valid_user = verify_token(token)
     if not valid_user:
         raise HTTPException(status_code=401, detail="Invalid token")
 
@@ -60,6 +62,36 @@ def update_me(payload: UpdateProfileRequest, token: str = Depends(oauth2_scheme)
         db.refresh(user)
         return user
     except Exception as e:
-        db.rollback() # Undo changes if something goes wrong
+        db.rollback() 
         print(f"Update error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error during update")
+
+
+
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str
+
+@router.post("/me/password", status_code=200)
+def change_password(
+    payload: ChangePasswordRequest,
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    valid_user = verify_token(token)
+    if not valid_user:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    user = db.query(Users).filter(Users.user_id == valid_user["user_id"]).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not verify_password(payload.old_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Incorrect old password")
+
+    user.password_hash = hash_password(payload.new_password)
+    
+    db.commit()
+    db.refresh(user)
+    
+    return {"message": "Password changed successfully"}
