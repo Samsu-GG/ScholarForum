@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column, Integer, String, Text, Date, TIMESTAMP,
-    ForeignKey, CheckConstraint, Index, Enum, event
+    ForeignKey, CheckConstraint, Index, Enum, event,UniqueConstraint
 )
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 from sqlalchemy.dialects.postgresql import TSVECTOR
@@ -58,6 +58,9 @@ class Author(Base):
     auth_id = Column(Integer, primary_key=True, autoincrement=True)
     auth_name = Column(String(255), nullable=False)
     affiliation = Column(String(255), nullable=False)
+    __table_args__ = (
+        UniqueConstraint('auth_name', 'affiliation', name='uix_author_affiliation'),
+    )
 
     writes = relationship("Writes", back_populates="author", cascade="all, delete")
 
