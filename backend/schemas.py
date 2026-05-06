@@ -41,6 +41,7 @@ class SearchResponse(BaseModel):
     paper_id: int
     title: str
     abstract: str
+    year: str
 
     class Config:
         from_attributes = True

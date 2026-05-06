@@ -24,7 +24,7 @@ def search_items(
 ):
 
     query = (
-        db.query(Papers.paper_id, Papers.title,Papers.abstract)
+        db.query(Papers.paper_id, Papers.title, Papers.abstract, Papers.publish_date)
         .filter(Papers.search_vector.op('@@')(func.plainto_tsquery(q)))
         
 
@@ -62,5 +62,5 @@ def search_items(
 
     query = query.limit(limit).offset(offset).all()
 
-    return [{"id": r.paper_id, "title": r.title, "abstract": r.abstract} for r in query]
+    return [{"paper_id": r.paper_id, "title": r.title, "abstract": r.abstract, "year": r.publish_date.strftime("%Y-%m-%d")} for r in query]
 

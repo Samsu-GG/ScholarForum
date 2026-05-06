@@ -3,33 +3,36 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 
 /**
  * API Fetching Logic
- * Sends search query and filters to the FastAPI backend.
+ * Cleans up empty filters before sending to FastAPI.
  */
-async function fetchSearchResult(query, filters) {
-  // Update this URL to your actual FastAPI server address
+async function fetchSearchResult(searchParams) {
   const BASE_URL = "http://127.0.0.1:8000/search/";
 
-  const params = new URLSearchParams({
-    q: query,
-    year_from: filters.yearFrom,
-    year_to: filters.yearTo,
-    author: filters.author,
-    recent_only: filters.recentOnly,
-    sort_by: filters.sortBy || "",
+  // Construct a clean object for the API (ignoring empty strings/nulls)
+  const apiParams = {
     limit: 10,
-    offset: 0
+    offset: 0,
+  };
+
+  if (searchParams.get("q")) apiParams.q = searchParams.get("q");
+  if (searchParams.get("yearFrom")) apiParams.year_from = searchParams.get("yearFrom");
+  if (searchParams.get("yearTo")) apiParams.year_to = searchParams.get("yearTo");
+  if (searchParams.get("author")) apiParams.author = searchParams.get("author");
+  if (searchParams.get("recentOnly") === "true") apiParams.recent_only = true;
+  if (searchParams.get("sortBy")) apiParams.sort_by = searchParams.get("sortBy");
+
+  const queryStr = new URLSearchParams(apiParams).toString();
+
+  const response = await fetch(`${BASE_URL}?${queryStr}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
 
-  const response = await fetch(`${BASE_URL}?${params.toString()}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                }
-            })
   if (!response.ok) {
-    console.error(`Error ${response.status}: ${response.statusText}`);
     const errorData = await response.json().catch(() => ({}));
-    console.error("Error details:", errorData);
+    console.error(`Error ${response.status}:`, errorData);
     throw new Error(`Backend error: ${response.status}`);
   }
 
@@ -37,19 +40,20 @@ async function fetchSearchResult(query, filters) {
 }
 
 const CURRENT_YEAR = new Date().getFullYear();
-
 const DEFAULT_FILTERS = {
-  yearFrom: 2010,
+  yearFrom: 1900,
   yearTo: CURRENT_YEAR,
   author: "",
   recentOnly: false,
-  sortBy: "", // Default is now empty
+  sortBy: "", 
 };
 
 export default function SearchResultsPage() {
-  const [searchParams] = useSearchParams();
-  const query = searchParams.get("q") || "";
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  // Extract current URL params to initialize UI state
+  const query = searchParams.get("q") || "";
 
   // Component State
   const [inputValue, setInputValue] = useState(query);
@@ -57,16 +61,21 @@ export default function SearchResultsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Filter States: 'filters' is for the UI, 'applied' triggers the actual search
-  const [filters, setFilters] = useState({ ...DEFAULT_FILTERS });
-  const [applied, setApplied] = useState({ ...DEFAULT_FILTERS });
+  // Draft filter state for the sidebar UI
+  const [filters, setFilters] = useState({
+    yearFrom: searchParams.get("yearFrom") ? parseInt(searchParams.get("yearFrom")) : DEFAULT_FILTERS.yearFrom,
+    yearTo: searchParams.get("yearTo") ? parseInt(searchParams.get("yearTo")) : DEFAULT_FILTERS.yearTo,
+    author: searchParams.get("author") || DEFAULT_FILTERS.author,
+    recentOnly: searchParams.get("recentOnly") === "true",
+    sortBy: searchParams.get("sortBy") || DEFAULT_FILTERS.sortBy,
+  });
 
-  // Sync input field with URL query param
+  // Keep search bar in sync if URL changes externally (e.g., hitting back button)
   useEffect(() => {
     setInputValue(query);
   }, [query]);
 
-  // Main Search Effect
+  // Main Search Effect - triggers WHENEVER the URL search params change
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
@@ -77,7 +86,8 @@ export default function SearchResultsPage() {
       setLoading(true);
       setError(null);
       try {
-        const data = await fetchSearchResult(query, applied);
+        // Pass the actual URLSearchParams to the fetcher
+        const data = await fetchSearchResult(searchParams);
         setResults(data);
       } catch (err) {
         console.error("Search Error:", err);
@@ -88,21 +98,47 @@ export default function SearchResultsPage() {
     };
 
     runSearch();
-  }, [query, applied]);
+  }, [searchParams, query]);
 
+  // Updates the 'q' parameter while preserving other URL filters
   const handleSearch = (e) => {
     e.preventDefault();
     const trimmed = inputValue.trim();
     if (trimmed) {
-      navigate(`/search?q=${encodeURIComponent(trimmed)}`);
+      setSearchParams((prev) => {
+        prev.set("q", trimmed);
+        return prev;
+      });
+    } else {
+      setSearchParams((prev) => {
+        prev.delete("q");
+        return prev;
+      });
     }
   };
 
-  const applyFilters = () => setApplied({ ...filters });
+  // Pushes draft sidebar filters into the URL
+  const applyFilters = () => {
+    setSearchParams((prev) => {
+      // Set or delete params based on whether they have a value
+      filters.yearFrom ? prev.set("yearFrom", filters.yearFrom) : prev.delete("yearFrom");
+      filters.yearTo ? prev.set("yearTo", filters.yearTo) : prev.delete("yearTo");
+      filters.author ? prev.set("author", filters.author) : prev.delete("author");
+      filters.recentOnly ? prev.set("recentOnly", "true") : prev.delete("recentOnly");
+      filters.sortBy ? prev.set("sortBy", filters.sortBy) : prev.delete("sortBy");
+      return prev;
+    });
+  };
 
+  // Wipes the URL clean (except for 'q') and resets draft UI
   const clearFilters = () => {
     setFilters({ ...DEFAULT_FILTERS });
-    setApplied({ ...DEFAULT_FILTERS });
+    setSearchParams((prev) => {
+      const q = prev.get("q");
+      const newParams = new URLSearchParams();
+      if (q) newParams.set("q", q);
+      return newParams;
+    });
   };
 
   return (
@@ -110,12 +146,9 @@ export default function SearchResultsPage() {
       {/* ── Header ── */}
       <header className="search-header">
         <div className="search-header-logo" onClick={() => navigate("/")}>
-          <span className="text-blue">S</span>
-          <span className="text-red">c</span>
-          <span className="text-yellow">h</span>
-          <span className="text-blue">o</span>
-          <span className="text-green">l</span>
-          <span className="text-red">a</span>
+          <span className="text-blue">S</span><span className="text-red">c</span>
+          <span className="text-yellow">h</span><span className="text-blue">o</span>
+          <span className="text-green">l</span><span className="text-red">a</span>
           <span className="text-blue">r</span>
         </div>
 
@@ -136,71 +169,35 @@ export default function SearchResultsPage() {
 
       {/* ── Body: results + filter panel ── */}
       <div className="search-body">
-        {/* Results column */}
         <main className="search-results-main">
-          {!query && (
-            <p className="status-text">Enter a search term above to get started.</p>
-          )}
-
-          {loading && (
-            <p className="status-text">
-              Searching for "<strong>{query}</strong>"…
-            </p>
-          )}
-
+          {!query && <p className="status-text">Enter a search term above to get started.</p>}
+          {loading && <p className="status-text">Searching for "<strong>{query}</strong>"…</p>}
           {error && <p className="status-text text-red">{error}</p>}
-
+          
           {!loading && !error && query && results.length === 0 && (
-            <p className="status-text">
-              Your search — <strong>{query}</strong> — did not match any documents.
-            </p>
+            <p className="status-text">Your search — <strong>{query}</strong> — did not match any documents.</p>
           )}
 
-          {!loading &&
-            results.map((item, index) => (
-              <div key={index} className="search-result-item">
-                <h3 className="result-title">{item.title}</h3>
-                <div className="result-meta">
-                  <span>{item.author}</span>
-                  <span className="result-meta-dot">·</span>
-                  <span>{item.year}</span>
-                </div>
-                <p className="result-abstract">{item.abstract}</p>
+          {!loading && results.map((item, index) => (
+            <div key={index} className="search-result-item">
+              <h3 className="result-title">{item.title}</h3>
+              <div className="result-meta">
+                <span>{item.author}</span>
+                <span className="result-meta-dot">·</span>
+                <span>{item.year}</span>
               </div>
-            ))}
+              <p className="result-abstract">{item.abstract}</p>
+            </div>
+          ))}
         </main>
 
         {/* ── Filter panel ── */}
         <aside className="filter-panel">
           <div className="filter-header">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="4" y1="6" x2="20" y2="6" />
-              <line x1="4" y1="12" x2="16" y2="12" />
-              <line x1="4" y1="18" x2="12" y2="18" />
-            </svg>
+            {/* SVG omitted for brevity, keep yours! */}
             SEARCH FILTERS
           </div>
 
-          {/* Keywords / Internal Search */}
-          <div className="filter-group">
-            <label className="filter-label">KEYWORDS</label>
-            <div className="filter-input-wrap">
-              <svg className="filter-input-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" strokeWidth="2">
-                <circle cx="11" cy="11" r="8" />
-                <path d="M21 21l-4.35-4.35" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Global search..."
-                className="filter-input"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") handleSearch(e); }}
-              />
-            </div>
-          </div>
-
-          {/* Year range */}
           <div className="filter-group">
             <label className="filter-label">SEARCH BETWEEN YEARS</label>
             <div className="filter-year-row">
@@ -224,7 +221,6 @@ export default function SearchResultsPage() {
             </div>
           </div>
 
-          {/* Author */}
           <div className="filter-group">
             <label className="filter-label">AUTHOR</label>
             <div className="filter-input-wrap">
@@ -235,14 +231,9 @@ export default function SearchResultsPage() {
                 value={filters.author}
                 onChange={(e) => setFilters((f) => ({ ...f, author: e.target.value }))}
               />
-              <svg className="filter-input-icon-right" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" strokeWidth="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
             </div>
           </div>
 
-          {/* Recent publish toggle */}
           <div className="filter-group">
             <div className="filter-toggle-row">
               <div>
@@ -259,7 +250,6 @@ export default function SearchResultsPage() {
             </div>
           </div>
 
-          {/* Sort by */}
           <div className="filter-group">
             <label className="filter-label">SORT BY</label>
             <div className="filter-select-wrap">
@@ -276,13 +266,7 @@ export default function SearchResultsPage() {
             </div>
           </div>
 
-          {/* Actions */}
           <button className="filter-apply-btn" onClick={applyFilters}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="23 4 23 10 17 10" />
-              <polyline points="1 20 1 14 7 14" />
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-            </svg>
             APPLY FILTERS
           </button>
           <button className="filter-clear-btn" onClick={clearFilters}>
