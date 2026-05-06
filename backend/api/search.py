@@ -3,7 +3,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from database import SessionLocal, get_db
-from models import Papers
+from models import Papers,Writes,Author,Cites
 from schemas import SearchResponse
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
