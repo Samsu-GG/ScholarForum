@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import { toast } from "react-toastify";
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const { isLoggedIn, user, loading, checkAuth } = useAuth();
+  const { isLoggedIn, user, loading, checkAuth, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -22,7 +23,7 @@ export default function Navbar() {
   const handleLogout = async () => {
     // Replace with your actual logout API call
     try {
-      localStorage.removeItem("token")
+      logout();
       toast.success("Logged out successfully!")
       setMenuOpen(false);
       navigate("/");

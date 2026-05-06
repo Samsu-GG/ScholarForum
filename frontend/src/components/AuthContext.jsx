@@ -7,8 +7,14 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
 
+    const logout = () => {
+        localStorage.removeItem("token");
+        setUser(null);
+        setIsLoggedIn(false);
+    };
+
     const checkAuth = async () => {
-        const token = localStorage.getItem("token"); 
+        const token = localStorage.getItem("token");
 
         if (!token) {
             setIsLoggedIn(false);
@@ -44,7 +50,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, isLoggedIn, loading, checkAuth }}>
+        <AuthContext.Provider value={{ user, isLoggedIn, loading, checkAuth, logout }}>
             {children}
         </AuthContext.Provider>
     );

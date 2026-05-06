@@ -6,7 +6,6 @@ import AuthForm from "../components/AuthForm";
 
 export default function LoginPage() {
   const navigate  = useNavigate();
-  const [success, setSuccess] = useState(false);
   const { checkAuth } = useAuth();
 
   const fields = [
@@ -38,7 +37,6 @@ export default function LoginPage() {
       if (response.ok) {
         localStorage.setItem("token", data.access_token)
         await checkAuth();
-        setSuccess(true);
         toast.success("Account Created Successfully!");
         setTimeout(() => navigate("/"), 1200);
       } else {
@@ -59,21 +57,12 @@ export default function LoginPage() {
           <Logo />
           <p className="auth-subtitle">Welcome back! Sign in to continue</p>
 
-          {success ? (
-            <>
-              <SuccessBanner message="You have successfully signed in! Welcome back." />
-              <button className="ghost-btn" onClick={() => navigate("/")}>Back to home</button>
-            </>
-          ) : (
-            <>
               <AuthForm fields={fields} validate={validate} onSubmit={handleSubmit} submitLabel="Sign in" />
               <Divider />
               <p className="footer-text">
                 Not registered yet?{" "}
                 <span className="link" onClick={() => navigate("/register")}>Register now</span>
               </p>
-            </>
-          )}
         </div>
       </div>
     </div>
@@ -91,15 +80,6 @@ function Logo() {
       <span className="text-yellow">F</span><span className="text-green">o</span>
       <span className="text-red">r</span><span className="text-blue">u</span>
       <span className="text-red">m</span>
-    </div>
-  );
-}
-
-function SuccessBanner({ message }) {
-  return (
-    <div className="success-banner">
-      <span className="success-icon">✓</span>
-      <span className="success-text">{message}</span>
     </div>
   );
 }

@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from database import get_db
 from models import Users
-from schemas import RegisterResponse
+from schemas import RegisterResponse, ChangePasswordRequest
 from pydantic import BaseModel, Field, field_validator
 from core.authenticate import verify_token
 from core.password_helper import verify_password, hash_password
@@ -66,11 +66,6 @@ def update_me(payload: UpdateProfileRequest, token: str = Depends(oauth2_scheme)
         print(f"Update error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error during update")
 
-
-
-class ChangePasswordRequest(BaseModel):
-    old_password: str
-    new_password: str
 
 @router.post("/me/password", status_code=200)
 def change_password(
