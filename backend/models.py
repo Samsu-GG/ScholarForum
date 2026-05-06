@@ -146,12 +146,12 @@ class Cites(Base):
 # SQLAlchemy event listener to update TSVECTOR manually
 # ------------------------------
 
-@event.listens_for(Papers, "before_insert")
-@event.listens_for(Papers, "before_update")
-def update_search_vector(mapper, connection, target):
-    text_to_index = f"{target.title} {target.abstract}"
-    connection.execute(
-        Papers.__table__.update()
-        .where(Papers.paper_id == target.paper_id)
-        .values(search_vector=func.to_tsvector("english", text_to_index))
-    )
+# @event.listens_for(Papers, "before_insert")
+# @event.listens_for(Papers, "before_update")
+# def update_search_vector(mapper, connection, target):
+#     text_to_index = f"{target.title} {target.abstract}"
+#     connection.execute(
+#         Papers.__table__.update()
+#         .where(Papers.paper_id == target.paper_id)
+#         .values(search_vector=func.to_tsvector("english", text_to_index))
+#     )

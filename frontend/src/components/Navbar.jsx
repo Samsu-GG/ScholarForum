@@ -22,8 +22,8 @@ export default function Navbar() {
   const handleLogout = async () => {
     // Replace with your actual logout API call
     try {
-      // await axios.post("http://127.0.0.1:8000/auth/logout", {}, { withCredentials: true });
-      // await checkAuth(); 
+      localStorage.removeItem("token")
+      toast.success("Logged out successfully!")
       setMenuOpen(false);
       navigate("/");
     } catch (err) {
