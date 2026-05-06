@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../components/AuthContext";[cite: 3]
-import Navbar from "../components/Navbar";[cite: 5]
+import { useAuth } from "../components/AuthContext";
+import Navbar from "../components/Navbar";
 
 export default function ResultPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isLoggedIn, user } = useAuth();[cite: 3]
+  const { isLoggedIn, user } = useAuth();
 
   const [paper, setPaper] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -56,14 +56,12 @@ export default function ResultPage() {
     if (!newComment.trim()) return;
 
     try {
-      const token = localStorage.getItem("token");[cite: 3]
-      const response = await fetch(`http://127.0.0.1:8000/papers/${id}/comments`, {
-        method: "POST",
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://127.0.0.1:8000/papers/${id}`, {
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ text: newComment }),
+        }
       });
 
       if (response.ok) {
