@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column, Integer, String, Text, Date, TIMESTAMP,
-    ForeignKey, CheckConstraint, Index, Enum, event,UniqueConstraint
+    ForeignKey, CheckConstraint, Index, Enum, event, UniqueConstraint
 )
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 from sqlalchemy.dialects.postgresql import TSVECTOR
@@ -9,22 +9,28 @@ import enum
 
 Base = declarative_base()
 
-
-
 # ------------------------------
 # ENUM for roles
 # ------------------------------
-
 class UserRole(enum.Enum):
     admin = "admin"
     user = "user"
     author = "author"
 
-
 # ------------------------------
 # Papers Table
 # ------------------------------
-
+# SQL: CREATE TABLE papers (
+#          paper_id SERIAL PRIMARY KEY,
+#          publish_date DATE NOT NULL,
+#          doi TEXT UNIQUE NOT NULL,
+#          abstract TEXT NOT NULL,
+#          title TEXT NOT NULL,
+#          pdf_link TEXT NOT NULL,
+#          search_vector TSVECTOR,
+#          CONSTRAINT check_publish_date CHECK (publish_date <= CURRENT_DATE)
+#      );
+# SQL Index: CREATE INDEX idx_search_vector ON papers USING gin(search_vector);
 class Papers(Base):
     __tablename__ = "papers"
 
@@ -35,7 +41,6 @@ class Papers(Base):
     title = Column(Text, nullable=False)
     pdf_link = Column(Text, nullable=False)
 
-    # TSVECTOR (manual update)
     search_vector = Column(TSVECTOR)
 
     __table_args__ = (
@@ -49,9 +54,14 @@ class Papers(Base):
 
 
 # ------------------------------
-# Author Table (as persons, but login is via Users)
+# Author Table
 # ------------------------------
-
+# SQL: CREATE TABLE author (
+#          auth_id SERIAL PRIMARY KEY,
+#          auth_name VARCHAR(255) NOT NULL,
+#          affiliation VARCHAR(255) NOT NULL,
+#          CONSTRAINT uix_author_affiliation UNIQUE (auth_name, affiliation)
+#      );
 class Author(Base):
     __tablename__ = "author"
 
@@ -66,9 +76,16 @@ class Author(Base):
 
 
 # ------------------------------
-# Users Table with Role ENUM
+# Users Table
 # ------------------------------
-
+# SQL: CREATE TABLE users (
+#          user_id SERIAL PRIMARY KEY,
+#          full_name VARCHAR(100) NOT NULL,
+#          user_name VARCHAR(100) NOT NULL,
+#          email VARCHAR(255) UNIQUE NOT NULL,
+#          password_hash TEXT NOT NULL,
+#          role user_role_enum NOT NULL
+#      );
 class Users(Base):
     __tablename__ = "users"
 
@@ -87,7 +104,13 @@ class Users(Base):
 # ------------------------------
 # Comments
 # ------------------------------
-
+# SQL: CREATE TABLE comment (
+#          comment_id SERIAL PRIMARY KEY,
+#          content TEXT NOT NULL,
+#          created_at TIMESTAMP DEFAULT now(),
+#          paper_id INTEGER REFERENCES papers(paper_id) ON DELETE CASCADE,
+#          user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE
+#      );
 class Comment(Base):
     __tablename__ = "comment"
 
@@ -105,7 +128,11 @@ class Comment(Base):
 # ------------------------------
 # Writes
 # ------------------------------
-
+# SQL: CREATE TABLE writes (
+#          auth_id INTEGER REFERENCES author(auth_id) ON DELETE CASCADE,
+#          paper_id INTEGER REFERENCES papers(paper_id) ON DELETE CASCADE,
+#          PRIMARY KEY (auth_id, paper_id)
+#      );
 class Writes(Base):
     __tablename__ = "writes"
 
@@ -119,7 +146,11 @@ class Writes(Base):
 # ------------------------------
 # Reads
 # ------------------------------
-
+# SQL: CREATE TABLE reads (
+#          user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+#          paper_id INTEGER REFERENCES papers(paper_id) ON DELETE CASCADE,
+#          PRIMARY KEY (user_id, paper_id)
+#      );
 class Reads(Base):
     __tablename__ = "reads"
 
@@ -133,7 +164,12 @@ class Reads(Base):
 # ------------------------------
 # Cites
 # ------------------------------
-
+# SQL: CREATE TABLE cites (
+#          citing_paper INTEGER REFERENCES papers(paper_id) ON DELETE CASCADE,
+#          cited_paper INTEGER REFERENCES papers(paper_id) ON DELETE CASCADE,
+#          PRIMARY KEY (citing_paper, cited_paper),
+#          CONSTRAINT check_no_self_cite CHECK (citing_paper <> cited_paper)
+#      );
 class Cites(Base):
     __tablename__ = "cites"
 
@@ -144,17 +180,12 @@ class Cites(Base):
         CheckConstraint("citing_paper <> cited_paper", name="check_no_self_cite"),
     )
 
+class ViewPaperDetails(Base):
+    __tablename__ = "view_paper_details"
 
-# ------------------------------
-# SQLAlchemy event listener to update TSVECTOR manually
-# ------------------------------
-
-# @event.listens_for(Papers, "before_insert")
-# @event.listens_for(Papers, "before_update")
-# def update_search_vector(mapper, connection, target):
-#     text_to_index = f"{target.title} {target.abstract}"
-#     connection.execute(
-#         Papers.__table__.update()
-#         .where(Papers.paper_id == target.paper_id)
-#         .values(search_vector=func.to_tsvector("english", text_to_index))
-#     )
+    paper_id = Column(Integer, primary_key=True)
+    title = Column(String)
+    publish_date = Column(Date)
+    abstract = Column(String)
+    pdf_link = Column(String)
+    authors = Column(String)

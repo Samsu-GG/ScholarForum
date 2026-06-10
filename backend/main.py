@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import engine, get_db
 from models import Base, Papers, Author, Users, Comment, Writes, Reads, Cites
-from api import auth, search, users   # added users
+from api import auth, search, users, papers   # added users
 from dotenv import load_dotenv
 import os
 
@@ -31,4 +31,5 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(search.router)
-app.include_router(users.router)   # added users router
+app.include_router(users.router)
+app.include_router(papers.router)

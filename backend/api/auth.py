@@ -8,7 +8,6 @@ from core.password_helper import hash_password, verify_password
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-
 # -------------------------
 # /register
 # -------------------------
@@ -16,10 +15,11 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
 
     # Check if email exists
+    # SQL: SELECT * FROM users WHERE users.email = :email LIMIT 1;
     existing = db.query(Users).filter(Users.email == data.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
-    # print(data.password)
+    
     hashed_pw = hash_password(data.password)
 
     new_user = Users(
@@ -30,6 +30,8 @@ def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
         role=UserRole.user   
     )
 
+    # SQL: INSERT INTO users (full_name, user_name, email, password_hash, role) 
+    #      VALUES (:full_name, :user_name, :email, :password_hash, 'user') RETURNING user_id;
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -43,6 +45,7 @@ def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
 @router.post("/login", response_model=LoginResponse)
 def login_user(data: LoginRequest, db: Session = Depends(get_db)):
 
+    # SQL: SELECT * FROM users WHERE users.email = :email LIMIT 1;
     user = db.query(Users).filter(Users.email == data.email).first()
     if not user:
         raise HTTPException(status_code=400, detail="Invalid credentials")
@@ -61,4 +64,4 @@ def login_user(data: LoginRequest, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "user_id": user.user_id,
         "role": user.role.value
-    }
+    }       

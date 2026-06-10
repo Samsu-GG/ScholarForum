@@ -50,3 +50,28 @@ class SearchResponse(BaseModel):
 class ChangePasswordRequest(BaseModel):
     old_password: str
     new_password: str
+
+
+class ResultPageResponse(BaseModel):
+    title: str
+    publish_date: str  
+    abstract: str
+    pdf_link: str
+    authors: str  
+    comments: list = []
+
+    class Config:
+        from_attributes = True
+
+class CommentCreate(BaseModel):
+    text: str
+
+
+class CommentResponse(BaseModel):
+    id: int
+    author_name: str
+    date: str
+    text: str
+
+    class Config:
+        from_attributes = True

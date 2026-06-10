@@ -1,6 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from sqlalchemy.orm import sessionmaker
+import ast
 
 from database import engine
 from models import Papers, Author, Writes
@@ -16,7 +17,10 @@ for _, row in df.iterrows():
     # 1. Parse authors (CSV stores them as a string)
     # -------------------------------
     authors_raw = row["authors"]
-    authors_list = [a.strip() for a in authors_raw.split(",")]
+    authors_list = [
+    author.strip()
+    for author in ast.literal_eval(authors_raw)
+]
 
     # -------------------------------
     # 2. Skip duplicate DOIs
@@ -46,7 +50,7 @@ for _, row in df.iterrows():
     # -------------------------------
     # 4. Affiliation is same for all authors
     # -------------------------------
-    affiliation_value = row["first_author"]
+    affiliation_value = ast.literal_eval(row["first_author"])
 
     # -------------------------------
     # 5. Insert authors + writes

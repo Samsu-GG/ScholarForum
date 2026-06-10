@@ -7,7 +7,6 @@ from schemas import RegisterResponse, ChangePasswordRequest
 from pydantic import BaseModel, Field, field_validator
 from core.authenticate import verify_token
 from core.password_helper import verify_password, hash_password
-
 import re
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -31,6 +30,7 @@ def get_me(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     if not valid_user:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+    # SQL: SELECT * FROM users WHERE users.user_id = :user_id LIMIT 1;
     user = db.query(Users).filter(Users.user_id == valid_user["user_id"]).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -45,12 +45,14 @@ def update_me(payload: UpdateProfileRequest, token: str = Depends(oauth2_scheme)
     if not payload.full_name and not payload.user_name:
         raise HTTPException(status_code=422, detail="At least one field is required")
 
+    # SQL: SELECT * FROM users WHERE users.user_id = :user_id LIMIT 1;
     user = db.query(Users).filter(Users.user_id == valid_user["user_id"]).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     try:
         if payload.user_name and payload.user_name != user.user_name:
+            # SQL: SELECT * FROM users WHERE users.user_name = :new_user_name LIMIT 1;
             if db.query(Users).filter(Users.user_name == payload.user_name).first():
                 raise HTTPException(status_code=409, detail="user_name already taken")
             user.user_name = payload.user_name
@@ -58,6 +60,7 @@ def update_me(payload: UpdateProfileRequest, token: str = Depends(oauth2_scheme)
         if payload.full_name:
             user.full_name = payload.full_name
 
+        # SQL: UPDATE users SET user_name = :u_name, full_name = :f_name WHERE user_id = :uid;
         db.commit()
         db.refresh(user)
         return user
@@ -77,6 +80,7 @@ def change_password(
     if not valid_user:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+    # SQL: SELECT * FROM users WHERE users.user_id = :user_id LIMIT 1;
     user = db.query(Users).filter(Users.user_id == valid_user["user_id"]).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -86,6 +90,7 @@ def change_password(
 
     user.password_hash = hash_password(payload.new_password)
     
+    # SQL: UPDATE users SET password_hash = :new_hash WHERE user_id = :uid;
     db.commit()
     db.refresh(user)
     

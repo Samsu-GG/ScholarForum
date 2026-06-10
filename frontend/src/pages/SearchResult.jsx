@@ -45,7 +45,7 @@ const DEFAULT_FILTERS = {
   yearTo: CURRENT_YEAR,
   author: "",
   recentOnly: false,
-  sortBy: "", 
+  sortBy: "",
 };
 
 export default function SearchResultsPage() {
@@ -173,14 +173,21 @@ export default function SearchResultsPage() {
           {!query && <p className="status-text">Enter a search term above to get started.</p>}
           {loading && <p className="status-text">Searching for "<strong>{query}</strong>"…</p>}
           {error && <p className="status-text text-red">{error}</p>}
-          
+
           {!loading && !error && query && results.length === 0 && (
             <p className="status-text">Your search — <strong>{query}</strong> — did not match any documents.</p>
           )}
 
           {!loading && results.map((item, index) => (
             <div key={index} className="search-result-item">
-              <h3 className="result-title">{item.title}</h3>
+              {/* Make the title clickable and navigate to the dynamic ID path */}
+              <h3
+                className="result-title"
+                onClick={() => navigate(`/papers/${item.paper_id}`)}
+                style={{ cursor: "pointer" }}
+              >
+                {item.title}
+              </h3>
               <div className="result-meta">
                 <span>{item.author}</span>
                 <span className="result-meta-dot">·</span>

@@ -13,6 +13,8 @@ export default function ResultPage() {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
 
+  console.log("ResultPage mounted! Extracted ID parameter is:", id);
+
   useEffect(() => {
     const fetchPaperDetails = async () => {
       setLoading(true);
@@ -53,32 +55,35 @@ export default function ResultPage() {
   }, [id]);
 
   const handlePostComment = async () => {
-    if (!newComment.trim()) return;
+  if (!newComment.trim()) return;
 
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`http://127.0.0.1:8000/papers/${id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      });
+  try {
+    const token = localStorage.getItem("token"); // Grab auth token
+    
+    const response = await fetch(`http://127.0.0.1:8000/papers/${id}/comments`, {
+      method: "POST",  
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}` 
+      },
+      body: JSON.stringify({ text: newComment }) 
+    });
 
-      if (response.ok) {
-        const addedComment = await response.json();
-        // Update UI with the new comment
-        setComments([addedComment, ...comments]);
-        setNewComment("");
-      }
-    } catch (error) {
-      console.error("Failed to post comment:", error);
+    if (response.ok) {
+      const addedComment = await response.json();
+      // Update UI state cleanly
+      setComments([addedComment, ...comments]);
+      setNewComment("");
     }
-  };
+  } catch (error) {
+    console.error("Failed to post comment:", error);
+  }
+};
 
   if (loading) {
     return (
       <div className="page-wrap">
-        <Navbar />[cite: 5]
+        <Navbar />
         <main className="search-results-main" style={{ textAlign: "center", marginTop: "50px" }}>
           <p className="status-text">Loading paper details...</p>[cite: 6]
         </main>
@@ -89,11 +94,11 @@ export default function ResultPage() {
   if (!paper) {
     return (
       <div className="page-wrap">
-        <div className="back-bar" onClick={() => navigate("/")}>&#8592; Back to Home</div>[cite: 8]
-        <Navbar />[cite: 5]
+        <div className="back-bar" onClick={() => navigate("/")}>&#8592; Back to Home</div>
+        <Navbar />
         <main className="search-results-main" style={{ textAlign: "center", marginTop: "50px" }}>
-          <h2 className="status-text">Paper not found.</h2>[cite: 6]
-          <button className="primary-btn" onClick={() => navigate(-1)}>Go Back</button>[cite: 4]
+          <h2 className="status-text">Paper not found.</h2>
+          <button className="primary-btn" onClick={() => navigate(-1)}>Go Back</button>
         </main>
       </div>
     );
@@ -101,8 +106,8 @@ export default function ResultPage() {
 
   return (
     <div className="page-wrap">
-      <div className="back-bar" onClick={() => navigate(-1)}>&#8592; Back to Results</div>[cite: 8]
-      <Navbar />[cite: 5]
+      <div className="back-bar" onClick={() => navigate(-1)}>&#8592; Back to Results</div>
+      <Navbar />
 
       <main className="search-results-main" style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
         {/* Title Section */}
@@ -122,7 +127,7 @@ export default function ResultPage() {
 
         {/* Abstract Section */}
         <div style={{ backgroundColor: "#f8f9fa", padding: "20px", borderRadius: "8px", marginBottom: "25px", border: "1px solid #dadce0" }}>
-          <h3 className="filter-header" style={{ marginTop: 0, marginBottom: "10px" }}>ABSTRACT</h3>[cite: 6]
+          <h3 className="filter-header" style={{ marginTop: 0, marginBottom: "10px" }}>ABSTRACT</h3>
           <p style={{ fontSize: "1rem", lineHeight: "1.6", color: "#4d5156", margin: 0 }}>
             {paper.abstract}
           </p>
@@ -141,7 +146,7 @@ export default function ResultPage() {
           </a>
         </div>
 
-        <div className="divider" style={{ margin: "30px 0" }}></div>[cite: 8]
+        <div className="divider" style={{ margin: "30px 0" }}></div>
 
         {/* Comment Section */}
         <section className="comments-section">
@@ -153,7 +158,7 @@ export default function ResultPage() {
             {!isLoggedIn ? (
               <div style={{ padding: "15px", backgroundColor: "#f1f3f4", borderRadius: "8px", textAlign: "center" }}>
                 <p style={{ margin: "0 0 10px 0", color: "#5f6368" }}>Sign in to join the conversation.</p>
-                <button className="outline-btn" onClick={() => navigate("/login")}>Sign In</button>[cite: 7]
+                <button className="outline-btn" onClick={() => navigate("/login")}>Sign In</button>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>

@@ -1,8 +1,8 @@
-"""message
+"""restore papers table
 
-Revision ID: c7119e50366d
-Revises: 0705a679015e
-Create Date: 2026-05-04 00:14:02.137899
+Revision ID: d7ebfb880ca6
+Revises: 
+Create Date: 2026-05-07 10:47:41.194996
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'c7119e50366d'
-down_revision: Union[str, Sequence[str], None] = '0705a679015e'
+revision: str = 'd7ebfb880ca6'
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -25,7 +25,8 @@ def upgrade() -> None:
     sa.Column('auth_id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('auth_name', sa.String(length=255), nullable=False),
     sa.Column('affiliation', sa.String(length=255), nullable=False),
-    sa.PrimaryKeyConstraint('auth_id')
+    sa.PrimaryKeyConstraint('auth_id'),
+    sa.UniqueConstraint('auth_name', 'affiliation', name='uix_author_affiliation')
     )
     op.create_table('papers',
     sa.Column('paper_id', sa.Integer(), autoincrement=True, nullable=False),
