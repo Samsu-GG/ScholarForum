@@ -25,7 +25,7 @@
 
 ### Database Schema
 
-![ScholarForum Database Schema](ScholarForum/Assets/schema.jpg)
+![ScholarForum Database Schema](ScholarForum/Assets/schema.png)
 
 The relational schema consists of core entity tables, interaction tables, and junction tables designed to preserve data integrity and support complex research networks:
 
